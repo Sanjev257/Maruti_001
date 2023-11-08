@@ -19,7 +19,7 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
 public class EmailSender {
-    public static void sendTestSummaryEmail(String recipient, String subject, String content,String path) {
+    public static void sendTestSummaryEmail(String recipient, String subject, String content) {
         // Set up mail server and properties
         Properties properties = new Properties();
         properties.put("mail.smtp.host", "smtp.gmail.com");
@@ -31,14 +31,14 @@ public class EmailSender {
         // Create a session with authentication
         Session session = Session.getInstance(properties, new Authenticator() {
             protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication("sanjev.m@trackdfect.com", "TD@welcome123");
+                return new PasswordAuthentication("abinaya.b@trackdfect.com", "TD@welcome123");
             }
         });
 
         try {
             // Create a message
             Message message = new MimeMessage(session);
-            message.setFrom(new InternetAddress("sanjev.m@trackdfect.com"));
+            message.setFrom(new InternetAddress("abinaya.b@trackdfect.com"));
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipient));
             message.setSubject("ATU Report");
             message.setText(content);
@@ -48,19 +48,19 @@ public class EmailSender {
             messageBodyPart.setContent(content, "text/html");
 
             // Create the attachment part
-            MimeBodyPart attachmentPart = new MimeBodyPart();
-            DataSource source = new FileDataSource(path);
-            attachmentPart.setDataHandler(new DataHandler(source));
-            attachmentPart.setFileName("TestReport.html");
+            // MimeBodyPart attachmentPart = new MimeBodyPart();
+            // DataSource source = new FileDataSource(path);
+            // attachmentPart.setDataHandler(new DataHandler(source));
+            // attachmentPart.setFileName("TestReport.html");
 
-            // Create a multipart email
-            Multipart multipart = new MimeMultipart();
-            multipart.addBodyPart(messageBodyPart);
-            multipart.addBodyPart(attachmentPart);
+            // // Create a multipart email
+            // Multipart multipart = new MimeMultipart();
+            // multipart.addBodyPart(messageBodyPart);
+            // multipart.addBodyPart(attachmentPart);
             
 
-            // Set the content of the email
-            message.setContent(multipart);
+            // // Set the content of the email
+            // message.setContent(multipart);
             
             
             // Send the message
