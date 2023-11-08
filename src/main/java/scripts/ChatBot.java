@@ -38,6 +38,7 @@ public class ChatBot extends Keywords {
 //			System.out.println("Actual response is mismatch with Excepted response");
 //		}
 		click(driver, loan);
+		System.out.println("verified the welcome message is available with menu options STEP1 is done");
 
 		System.out.println("\nSTEP2 : Verify the click ability of - MSSF Loan Process quick-access buttons");
 		responseTimeCalculator1(driver, MssfText);
