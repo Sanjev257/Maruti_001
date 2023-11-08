@@ -36,6 +36,7 @@ import org.openqa.selenium.NoSuchFrameException;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.TimeoutException;
 
 //import java.awt.Color;
 //import java.awt.image.BufferedImage;
@@ -61,6 +62,7 @@ import com.jayway.restassured.response.Response;
 import atu.testng.reports.ATUReports;
 import atu.testng.reports.logging.LogAs;
 import atu.testng.reports.utils.Directory;
+import mails.EmailSender;
 import net.sourceforge.tess4j.ITesseract;
 import net.sourceforge.tess4j.Tesseract;
 
@@ -277,11 +279,11 @@ public void waitForElementWithLessWait(WebDriver driver, String xpath) {
 		
 		String[] values = splitXpath(xpath);
 		try {
-			//driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+//			driver.manage().timeouts().implicitlyWait(-1, TimeUnit.SECONDS);
 
 			//System.out.println(driver.getTitle());
-		WebDriverWait wait1 = new WebDriverWait(driver,120);
-		wait1.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(values[1])));
+		WebDriverWait wait1 = new WebDriverWait(driver,3600);
+		wait1.until(ExpectedConditions.presenceOfElementLocated(By.xpath(values[1])));
 		add(driver, "Wait for visibility of Element" + values[0], LogAs.PASSED, true, values[0]);
 		}catch (Exception e) {
 			System.out.println(" Exception "+e);
@@ -297,8 +299,6 @@ public void waitForElementWithLessWait(WebDriver driver, String xpath) {
 	public  void click(WebDriver driver, String path) {
 		String[] values = splitXpath(path);
 		try {
-			
-		
 			WebElement webElement = driver.findElement(By.xpath(values[1]));
 			JavascriptExecutor js = (JavascriptExecutor) driver;
 			 js.executeScript("arguments[0].setAttribute('style', 'background: yellow; border: 2px solid red;');",webElement);
@@ -317,7 +317,7 @@ public void waitForElementWithLessWait(WebDriver driver, String xpath) {
 		 String[] values = splitXpath(xpath);
 		 
 		 long Start = System.currentTimeMillis();
-		 WebDriverWait wait1 = new WebDriverWait(driver,120);
+		 WebDriverWait wait1 = new WebDriverWait(driver,3600);
 		 wait1.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(values[1])));
 		 long finish = System.currentTimeMillis();
 		 
@@ -408,16 +408,16 @@ public void waitForElementWithLessWait(WebDriver driver, String xpath) {
 	public void asserterText(WebDriver driver, String xpath, String Text,String menutype) {
 
 		String[] value = splitXpath(xpath);
-		WebDriverWait wait1 = new WebDriverWait(driver, 30);
+		WebDriverWait wait1 = new WebDriverWait(driver, 3600);
 		wait1.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(value[1])));
 		WebElement msg = driver.findElement(By.xpath(value[1]));
 		String field = msg.getText();
-		System.out.println("Actual results for "+ value[0] + field);
+//		System.out.println("Actual results for "+ value[0] + field);
 
 		if (field.contains(Text)) {
 
-			System.out.println("Verified excepted reply matches with actual reply" );
-			addfps(driver, "Verified excepted reply matches with actual reply", field,true, "");
+			System.out.println("Verification : \nExcepted response is : "+ Text + " \nActual response is : "+ field +"\nBoth responses got matches" );
+			addfps(driver, "Verified Excepted response is : "+ Text + "Actual response is : "+ field +"\nBoth responses got matches", field,true, "");
 		} else {
 			System.out.println("Verified excepted reply does not match with actual reply");
 		add1(driver, "Verified excepted reply does not match with actual reply", LogAs.FAILED,true, value[0]);
@@ -494,8 +494,8 @@ public void waitForElementWithLessWait(WebDriver driver, String xpath) {
 		try {
 			WebElement webElement = driver.findElement(By.xpath(values[1]));
 			webElement.sendKeys(keysToSend);
-			
-			add(driver, "Type on " + values[0], keysToSend, true, values[0]);
+			System.out.println("Type on " + keysToSend);
+			add(driver, "Type on - " + values[0], keysToSend, true, values[0]);
 
 		} catch (Exception e) {
 			add1(driver, "Unable to type on " + values[0], keysToSend, true, values[0]);
@@ -513,9 +513,9 @@ public void waitForElementWithLessWait(WebDriver driver, String xpath) {
 			for (char c : keysToSend.toCharArray()) {
 	            String letter = String.valueOf(c);
 	            webElement.sendKeys(letter);
-//			webElement.sendKeys(keysToSend);
 			}
-			add(driver, "Type on " + values[0], keysToSend, true, values[0]);
+			System.out.println("Type on " + keysToSend);
+			add(driver, "Type on - " + values[0], keysToSend, true, values[0]);
 		} catch (Exception e) {
 			add1(driver, "Unable to type on " + values[0], keysToSend, true, values[0]);
 			//Assert.fail();
@@ -1914,8 +1914,76 @@ public String Triangle(WebDriver driver,WebElement element,String Path,String Pa
   	}
     
     
-	
+    public void ElementvisibleEmail(WebDriver driver , String xpath) {
+    	String[] values = splitXpath(xpath);
+       WebDriverWait wait = new WebDriverWait(driver, 60);
+       	boolean emailSent = false;
+       try {
+           boolean elementFound = false;
 
+           while (!elementFound) {
+               try {
+                   // Attempt to find the element
+                   WebElement element = wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath(values[1])));
+                   // Interaction with the found element (e.g., element.click(), element.sendKeys(), etc.)
+                   elementFound = true; // Set the flag to true if the element is found
+               } catch (Exception e) {
+               	
+               	if(!emailSent) {
+               		
+                   // Handle the exception if the element is not found
+                   System.out.println(values[0] + "Element not found within 1 minute. Sending an email to the client.");
+                   EmailSender.sendTestSummaryEmail("sarath.s@trackdfect.com", "Element Not Found", values[0] +"The element was not found within the specified timeout of 1 minute.");
+                   emailSent = true;
+                   // Sleep for an additional time (e.g., 30 seconds) before retrying
+                   Thread.sleep(30000);
+               	}
+               }
+           }
+       } catch (Exception e) {
+           e.printStackTrace();
+       } 
+   }
+    
+	public void ElementvisibleEmail1(WebDriver driver, String xpath) {
+		String[] values = splitXpath(xpath);
+		WebDriverWait wait = new WebDriverWait(driver, 60);
 
+		int a = 1;
+
+		for (int i = 2; i <= a; i++) {
+
+			WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(values[1])));
+			if (!element.isDisplayed()) {
+
+				EmailSender.sendTestSummaryEmail("sarath.s@trackdfect.com", "Element Not Found",
+						values[0] + "The element was not found within the specified timeout of 1 minute.");
+				break; // Exit the loop
+			}
+
+			else {
+				// Element not found, you can choose to handle it or ignore it
+				System.out.println("Element not found");
+			}
+
+		}
+
+	}
+	public void responseTimeCalculator1(WebDriver driver, String xpath) {
+		 String[] values = splitXpath(xpath);
+		
+		 long Start = System.currentTimeMillis();
+		 WebDriverWait wait1 = new WebDriverWait(driver,3600);
+		 wait1.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(values[1])));
+		 long finish = System.currentTimeMillis();
+		 double totaltime = (finish - Start);
+		 System.out.println("Time taken for visiblity of -"+values[0] + " : " +totaltime/1000 + " sec");
+		 add(driver, "Time taken for visiblity of " + values[0]+" : " +totaltime + " ms", LogAs.PASSED, true, values[0]);
+		 
+		 if (totaltime/1000 > 60) {
+	            // Send an email
+			 EmailSender.sendTestSummaryEmail("sarath.s@trackdfect.com", "Element Not Found",
+					 values[0]+ "\nThe element was not found within the specified timeout of 1 minute.");
+	        }
+		}
 }
-
